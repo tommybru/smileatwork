@@ -1,12 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { material } from 'react-native-typography';
 import ThoughtsFeed from '../Components/ThoughtsFeed';
 import Home from '../Screens/HomeScreen';
 
 var { height, width } = Dimensions.get('window');
 
-var homeScreenBackgroundColor = (mood) => {
+var backgroundColor = (mood) => {
   if (mood == 'EXCITED') {
     return '#F291C7'
   } else if (mood == 'CONTENT') {
@@ -47,11 +46,11 @@ export default class HomeScreen extends React.Component {
         <View style={{flexDirection: 'row', flex: 1, justifyContent: "space-evenly", alignItems: "center"}}>
           <Image
             source={require("../Images/write.png")}
-            style={{ width: height * 0.03, height: height * 0.03, opacity: 0, marginLeft: height * 0.02}}
+            style={{ width: height * 0.03, height: height * 0.03, opacity: 0, marginLeft: 16.34/375 * width}}
           />
           <Text style={thoughtsStyles.headerText}>Team Thoughts</Text>
           <TouchableOpacity
-          style={{marginRight: height * 0.02}}
+          style={{marginRight: 16.34/375 * width}}
           onPress={() => {
             navigation.navigate('AddThoughtScreen', {mood: mood});
           }}>
@@ -63,9 +62,9 @@ export default class HomeScreen extends React.Component {
         </View>
       ),
       headerStyle: {
-        backgroundColor: homeScreenBackgroundColor(mood),
+        backgroundColor: backgroundColor(mood),
         borderBottomWidth: 0,
-        height: height * 0.05,
+        height: height * 0.07,
       }
     };
   };
@@ -114,12 +113,12 @@ export default class HomeScreen extends React.Component {
 
 const thoughtsStyles = StyleSheet.create({
   container: {
-    marginTop: 10,
+    marginTop: height * 0.012,
     flex: 1,
   },
   displayText: {
     flex: 1,
-    fontSize: 40,
+    fontSize: 40/375 * width,
     fontStyle: 'italic',
     fontWeight: '200',
     color: 'black',
@@ -127,8 +126,7 @@ const thoughtsStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerText: {
-    fontSize: height * 0.025,
-    alignSelf: "center",
+    fontSize: height * 0.035,
     marginLeft: "auto",
     marginRight: "auto",
     fontFamily: 'Lato-Black'

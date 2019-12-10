@@ -1,7 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions } from 'react-native';
 
-var homeScreenBackgroundColor = (mood) => {
+var { height, width } = Dimensions.get('window');
+
+var backgroundColor = (mood) => {
     if (mood == 'EXCITED') {
         return '#F291C7'
     } else if (mood == 'CONTENT') {
@@ -15,6 +17,8 @@ var homeScreenBackgroundColor = (mood) => {
     }
 }
 
+
+
 export default class InclusivityScreen extends React.Component {
 
 
@@ -23,18 +27,37 @@ export default class InclusivityScreen extends React.Component {
             headerTitle: (
                 <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row'}}>
                     <Image source={require('../../Images/TaskCategoryIcons/inclusivityIcon.png')}
-                        style={{ height: 30, width: 24.53, marginRight: '8%' }} />
+                        style={{ height: height * 0.0367, width: width * 0.065, marginRight: '8%' }}
+                        resizeMode='contain'/>
                     <Text style={InclusivityStyles.heading}>INCLUSIVITY</Text>
                 </View>
             ),
+            headerTintColor: 'black',
             headerStyle: {
-                backgroundColor: homeScreenBackgroundColor(mood),
+                backgroundColor: backgroundColor(mood),
                 borderBottomWidth: 0,
+                height: height * 0.07,
             }
         };
     };
 
+    updateMood = () => {
+      if(!this.props.navigation) {
+        return;
+      }
+      this.setState({mood: this.props.navigation.state.params.mood});
+    }
 
+    componentDidMount(){
+      this.colorTimer = setInterval(() => (
+        this.props.navigation.state.params.mood != backgroundColor(mood) ?
+        this.updateMood() : ""
+      ), 500);
+    }
+
+    componentWillUnmount() {
+      clearInterval(this.colorTimer);
+    }
 
     render() {
         return (
@@ -46,7 +69,7 @@ export default class InclusivityScreen extends React.Component {
 const InclusivityStyles = StyleSheet.create({
     displayText: {
         flex: 1,
-        fontSize: 30,
+        fontSize: width * 0.08,
         fontFamily: 'Lato-Regular',
         color: 'black',
         padding: '12%',
@@ -54,7 +77,7 @@ const InclusivityStyles = StyleSheet.create({
     },
     heading: {
         fontFamily: 'Lato-Black',
-        fontSize: 22,
+        fontSize: height * 0.03,
         textAlign: "center"
     },
 })

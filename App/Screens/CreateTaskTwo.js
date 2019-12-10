@@ -1,12 +1,12 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
-import { material } from 'react-native-typography';
 import Home from '../Screens/HomeScreen';
 import CalendarPicker from 'react-native-calendar-picker';
+import { StackActions, NavigationActions } from 'react-navigation';
 
 var { height, width } = Dimensions.get('window');
 
-var homeScreenBackgroundColor = (mood) => {
+var backgroundColor = (mood) => {
   if (mood == 'EXCITED') {
     return '#F291C7'
   } else if (mood == 'CONTENT') {
@@ -63,26 +63,56 @@ export default class TasksScreen extends React.Component {
     });
   }
 
-  updateMood = () => {
-    if(!this.props.navigation) {
-      return;
+  disableDates(date) {
+    wanted_date = new Date(2019, 11, 19);
+    format_wanted_date = wanted_date.getFullYear() + "-" + (wanted_date.getMonth() + 1) + "-" + wanted_date.getDate()
+    format_curr_date = date.utc().format('YYYY-MM-DD');
+    if (format_curr_date === format_wanted_date) {
+      return false;
+    } else {
+      return true;
     }
-    this.setState({mood: this.props.navigation.state.params.mood});
   }
 
-  componentDidMount(){
+  updateMood = () => {
+    if (!this.props.navigation) {
+      return;
+    }
+    this.setState({ mood: this.props.navigation.state.params.mood });
+  }
+
+  componentDidMount() {
     setInterval(() => (
       this.props.navigation.state.params.mood != accentColor(mood) ?
-      this.updateMood() : ""
+        this.updateMood() : ""
     ), 500);
   }
 
   static navigationOptions = ({ navigation }) => {
     return {
-      // headerTitle: (
-      //   <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-      //   </View>
-      // ),
+      headerRight: () => (
+        <TouchableOpacity
+          style={{
+            marginTop: 2 / 817 * height,
+            marginRight: 10 / 375 * width,
+          }}
+          onPress={() => {
+            const resetAction = StackActions.reset({
+              index: 0,
+              actions: [NavigationActions.navigate({ routeName: 'ThoughtsScreen' })],
+            });
+            navigation.dispatch(resetAction);
+          }}
+        >
+          <Text style={{
+            fontFamily: 'Lato-Regular',
+            fontSize: 17 / 375 * width,
+            alignSelf: 'center',
+            color: '#007AFF',
+          }}>Cancel</Text>
+        </TouchableOpacity>
+      ),
+      headerTintColor: 'black',
       headerStyle: {
         backgroundColor: 'white',
         borderBottomWidth: 0,
@@ -94,103 +124,92 @@ export default class TasksScreen extends React.Component {
     const { selectedStartDate } = this.state;
     const startDate = selectedStartDate ? selectedStartDate.toString() : '';
     return (
-      <View style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }}>
         <Text style={{
-          fontFamily:'Lato-Bold',
-          fontSize: 40,
+          fontFamily: 'Lato-Bold',
+          fontSize: height * 0.05,
           textAlign: 'left',
-          marginTop: 10,
-          marginBottom: 10,
-          marginLeft: 20,
+          marginTop: height * 0.01,
+          marginBottom: height * 0.02,
+          marginLeft: width * 0.053,
         }}>Create Task</Text>
         <Text style={{
-          fontFamily:'Lato-Bold',
-          fontStyle: 'italic',
-          fontSize: 20,
+          fontFamily: 'Lato-Italic',
+          fontSize: 20 / 375 * width,
           textAlign: 'left',
           marginTop: 0,
-          marginBottom: 30,
-          marginLeft: 20,
+          marginBottom: 60 / 817 * height,
+          marginLeft: 20 / 375 * width,
         }}>Finish task by</Text>
         <CalendarPicker
           onDateChange={this.onDateChange}
-          selectedDayColor={accentColorMuted(mood)}
+          disabledDates={this.disableDates}
+          selectedDayColor={accentColor(mood)}
+          selectedDayTextColor='white'
         />
         <TouchableOpacity
           style={{
             backgroundColor: accentColor(mood),
             opacity: 0.8,
-            paddingTop: 18,
-            borderRadius: 30,
-            width: 245,
-            height: 56,
+            borderRadius: 7,
+            width: (196 / 375) * width,
+            height: (41 / 817) * height,
             alignSelf: 'center',
-            marginTop: 20,
+            marginTop: 50 / 817 * height,
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
-          onPress={() => {this.props.navigation.navigate('CreateTaskThree', {mood: mood})}}
+          onPress={() => { if (this.state.selectedStartDate) { this.props.navigation.navigate('CreateTaskThree', { mood: mood }) } }}
         >
           <Text style={{
-            fontFamily:'Lato-Bold',
-            fontSize: 20,
+            fontFamily: 'Lato-Bold',
+            fontSize: 20 / 375 * width,
             alignSelf: 'center',
             color: '#FFFFFF',
+            textAlign: 'center',
           }}>NEXT</Text>
         </TouchableOpacity>
         <View style={styles.container}>
           <View style={styles.CircleShapeView}>
           </View>
           <View style={{
-            width: 12,
-            height: 12,
-            borderRadius: 12/2,
+            width: 9 / 375 * width,
+            height: 9 / 375 * width,
+            borderRadius: (9 / 375 * width) / 2,
             opacity: 0.8,
-            marginLeft: 20,
-            marginRight: 10,
+            marginLeft: 20 / 375 * width,
+            marginRight: 10 / 375 * width,
             backgroundColor: accentColor(mood),
           }}>
           </View>
           <View style={styles.CircleShapeView}>
           </View>
         </View>
-      </View>
+      </ScrollView>
     );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 10
+    margin: 30 / 375 * width
   },
   CircleShapeView: {
-    width: 12,
-    height: 12,
-    borderRadius: 12/2,
+    width: 9 / 375 * width,
+    height: 9 / 375 * width,
+    borderRadius: (9 / 375 * width) / 2,
     backgroundColor: '#BDBDBD',
-    marginLeft: 20,
-    marginRight: 10,
-  },
-  taskTitle: {
-    height: 200,
-    width: width * 0.95,
-    padding: 0,
-    margin: 0,
-    marginLeft: 10,
+    marginLeft: 20 / 375 * width,
+    marginRight: 10 / 375 * width,
   },
   pageIndicator: {
-    height: 20,
+    height: 20 / 817 * height,
     width: '20%',
     alignSelf: 'center',
-    marginTop: 40,
-  },
-  taskDes: {
-    height: 250,
-    width: width * 0.95,
-    padding: 0,
-    margin: 0,
-    marginLeft: 10,
+    marginTop: 40 / 817 * height,
   },
 });

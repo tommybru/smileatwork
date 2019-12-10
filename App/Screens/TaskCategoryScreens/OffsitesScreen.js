@@ -1,11 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { material } from 'react-native-typography';
 import TaskMiami from '../../Screens/TaskMiami.js';
 
 var { height, width } = Dimensions.get('window');
 
-var homeScreenBackgroundColor = (mood) => {
+var backgroundColor = (mood) => {
     if (mood == 'EXCITED') {
         return '#F291C7'
     } else if (mood == 'CONTENT') {
@@ -41,13 +40,16 @@ export default class OffsitesScreen extends React.Component {
             headerTitle: (
                 <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
                     <Image source={require('../../Images/TaskCategoryIcons/offsiteIcon.png')}
-                        style={{ height: 30, width: 42, marginRight: '8%' }} />
+                        style={{ height: height * 0.0367, width: width * 0.112, marginRight: '8%' }}
+                        resizeMode='contain' />
                     <Text style={OffsitesSyles.heading}>OFFSITES</Text>
                 </View>
             ),
+            headerTintColor: 'black',
             headerStyle: {
-                backgroundColor: homeScreenBackgroundColor(mood),
+                backgroundColor: backgroundColor(mood),
                 borderBottomWidth: 0,
+                height: height * 0.07,
             }
         };
     };
@@ -60,10 +62,14 @@ export default class OffsitesScreen extends React.Component {
     }
 
     componentDidMount(){
-      setInterval(() => (
+      this.colorTimer = setInterval(() => (
         this.props.navigation.state.params.mood != accentColor(mood) ?
         this.updateMood() : ""
       ), 500);
+    }
+
+    componentWillUnmount() {
+      clearInterval(this.colorTimer);
     }
 
 
@@ -72,11 +78,11 @@ export default class OffsitesScreen extends React.Component {
         return (
             <View style={OffsitesSyles.tasksContainer}>
                 <TouchableOpacity
-                    style={[OffsitesSyles.task, { justifyContent: 'center', marginTop: 20 }]}
+                    style={[OffsitesSyles.task, { justifyContent: 'center', marginTop: height * 0.024 }]}
                     onPress={() => { this.props.navigation.navigate('TaskMiami', {mood: mood});}}
                 >
-                    <Text style={{ left: 24, fontFamily: 'Lato-Regular', fontSize: 23 }}>Miami Trip</Text>
-                    <Text style={{ fontSize: 16, fontFamily: 'Lato-Italic', color: accentColor(mood), left: 22 }}>Expires in 1 day</Text>
+                    <Text style={{ left: width * 0.064, fontFamily: 'Lato-Regular', fontSize: height * 0.03}}>Miami Trip</Text>
+                    <Text style={{ fontSize: height * 0.02, fontFamily: 'Lato-Italic', color: accentColor(mood), left: width * 0.065 }}>Expires Dec 12, 2019</Text>
                 </TouchableOpacity>
             </View>
         );
@@ -84,23 +90,10 @@ export default class OffsitesScreen extends React.Component {
 }
 
 const OffsitesSyles = StyleSheet.create({
-    displayText: {
-        flex: 1,
-        fontSize: 40,
-        fontStyle: 'italic',
-        fontWeight: '200',
-        color: 'black',
-        padding: '15%',
-        justifyContent: 'center',
-    },
     heading: {
         fontFamily: 'Lato-Black',
-        fontSize: 22,
+        fontSize: height * 0.03,
         textAlign: "center"
-    },
-    title: {
-        fontFamily: 'Lato-Bold',
-        fontSize: 20
     },
     tasksContainer: {
         flexDirection: 'column',
@@ -108,11 +101,11 @@ const OffsitesSyles = StyleSheet.create({
         justifyContent: 'center'
     },
     task: {
-        width: 345,
-        height: 89,
+        width: width * 0.92,
+        height: height * 0.109,
         borderWidth: 1,
         borderRadius: 8,
         borderColor: '#BDBDBD',
-        margin: 5
+        margin: width * 0.013
     },
 })

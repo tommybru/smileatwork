@@ -1,9 +1,10 @@
 {
   "devToolsPort": 19002,
-  "expoServerPort": 19000,
-  "packagerPort": 19001,
-  "packagerPid": 57233,
-  "expoServerNgrokUrl": "https://xp-j98.anonymous.smileatwork.exp.direct",
-  "packagerNgrokUrl": "https://packager.xp-j98.anonymous.smileatwork.exp.direct",
-  "ngrokPid": 57244
+  "expoServerPort": null,
+  "packagerPort": null,
+  "packagerPid": null,
+  "expoServerNgrokUrl": null,
+  "packagerNgrokUrl": null,
+  "ngrokPid": null,
+  "webpackServerPort": null
 }

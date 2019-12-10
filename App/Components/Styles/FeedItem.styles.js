@@ -28,14 +28,10 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 15,
-    marginLeft: height * 0.065,
-  },
-  descContainer: {
-    marginLeft: Metrics.marginHorizontal,
-    marginRight: Metrics.marginHorizontal,
+    marginLeft: height * 0.075,
   },
   textContainer: {
     marginLeft: Metrics.marginHorizontal,
-    marginRight: 50,
+    marginRight: height * 0.06,
   },
 });

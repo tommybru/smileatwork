@@ -1,12 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions, ScrollView, ColorPropType } from 'react-native';
-import { material } from 'react-native-typography';
-// import Feed from '../Components/Feed';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions, ScrollView, ColorPropType, Alert } from 'react-native';
 import Home from '../Screens/HomeScreen';
 import { Colors } from '../Themes';
+import { AsyncStorage } from 'react-native';
+import TaskStyle from '../Components/Styles/TaskPage.styles';
 var { height, width } = Dimensions.get('window');
 
-var homeScreenBackgroundColor = (mood) => {
+var backgroundColor = (mood) => {
   if (mood == 'EXCITED') {
     return '#F291C7'
   } else if (mood == 'CONTENT') {
@@ -49,162 +49,184 @@ var accentColor = (mood) => {
 }
 
 export default class TaskMiami extends React.Component {
-    constructor(props){
-      super(props);
-      console.log("got to misbah bday");
 
-      }
+  state = {
+    joined: true,
+    joinedText: "UnJoin",
+  }
+  constructor(props) {
+    super(props);
+
+  }
 
   static navigationOptions = ({ navigation }) => {
     return {
       headerTitle: (
         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={TaskMiamiStyle.heading}>Task</Text>
+          <Text style={TaskStyle.heading}>Task</Text>
         </View>
       ),
+      headerTintColor: 'black',
       headerStyle: {
-        backgroundColor: homeScreenBackgroundColor(mood),
+        backgroundColor: backgroundColor(mood),
         borderBottomWidth: 0,
+        height: height * 0.07,
       }
     };
   };
 
   updateMood = () => {
-    if(!this.props.navigation) {
+    if (!this.props.navigation) {
       return;
     }
-    this.setState({mood: this.props.navigation.state.params.mood});
+    this.setState({ mood: this.props.navigation.state.params.mood });
   }
 
-  componentDidMount(){
-    setInterval(() => (
+  async componentDidMount() {
+    this._isMounted = true;
+    try {
+      const joinedValue = await AsyncStorage.getItem('JoinedMiami');
+      if (joinedValue === null){
+        this.setState({ joined: true });
+      }else {
+        this.setState({ joined:  joinedValue=== "true" });
+      }
+
+      const joinedTextValue = await AsyncStorage.getItem('JoinedMiamiText');
+      if (joinedTextValue === null || joinedTextValue === ""){
+        this.setState({ joinedText: "Unjoin" });
+      }else{
+        this.setState({ joinedText: joinedTextValue});
+      }
+
+
+    } catch (error) {
+      // Error retrieving data
+      console.log("Async storage error in retreival");
+    }
+    this.colorTimer = setInterval(() => (
       this.props.navigation.state.params.mood != accentColor(mood) ?
-      this.updateMood() : ""
+        this.updateMood() : ""
     ), 500);
   }
 
+  async componentWillUnmount() {
+    clearInterval(this.colorTimer);
+    this._isMounted = false;
+    try {
+      await AsyncStorage.setItem('JoinedMiami', this.state.joined.toString());
+      await AsyncStorage.setItem('JoinedMiamiText', this.state.joinedText.toString());
+    } catch (error) {
+      // Error saving data
+      console.warn("async storage had a problem storying the data on unmount");
+    }
+  }
+
+  joinTheEvent() {
+    this.setState({ joined: !this.state.joined }, function () {
+
+      if (this.state.joined) {
+
+        this.setState({joinedText: "Unjoin"});
+        Alert.alert(
+          'Joined Task',
+          "Congratulations you've joined Miami Trip!",
+          [
+            { text: "Vew Action Items", onPress: () => this.props.navigation.navigate('ActionItemsMiamiTrip', { mood: mood }) },
+          ],
+          { cancelable: false },
+        );
+      } else {
+
+        this.setState({joinedText: "Join"});
+        Alert.alert(
+          'UnJoined Task',
+          "You've left Miami Trip.",
+          [
+            { text: "Ok", onPress: () => this.props.navigation.navigate('TasksScreen', { mood: mood }) },
+          ],
+          { cancelable: false },
+        );
+      }
+  });
+  }
 
   render() {
     return (
-      <View style={{ }}>
-        <View style={{ }}>
-          <Text style={TaskMiamiStyle.TaskTitle}>Miami Trip</Text>
-          <Text style={TaskMiamiStyle.expirationDate}>Expires Dec 31st, 2019</Text>
-          <Text style={TaskMiamiStyle.taskDetails}>Let’s celebrate the successful launch of Vibes with an off-site!</Text>
+      <View style={{}}>
+
+<ScrollView>
+
+        <View style={{}}>
+          <Text style={TaskStyle.TaskTitle}>Miami Trip</Text>
+          <Text style={TaskStyle.expirationDate}>Expires Dec 12, 2019</Text>
+          <Text style={TaskStyle.taskDetails}>Let’s celebrate the successful launch of Vibes with an off-site!</Text>
 
         </View>
 
-      <View  style={{flexDirection:'row', marginTop:50, flex:1, marginLeft:20}}>
-      <TouchableOpacity
-          style={{
-            backgroundColor: accentColor(mood),
-            opacity: 0.7,
-            paddingTop: 18,
-            borderRadius: 100,
-            width: 159.52,
-            height: 63,
-          }}
+        <View style={{ flexDirection: 'row', marginTop: 50/ 817 * height, flex: 1, justifyContent: "center" }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: accentColor(mood),
+              opacity: 0.8,
+              paddingTop: height * 0.025,
+              borderRadius: 100,
+              width: width * 0.4,
+              height: height * 0.08,
+            }}
             onPress={() => {
-              this.props.navigation.navigate('ActionItemsMiamiTrip', {mood: mood});
+              this.props.navigation.navigate('ActionItemsMiamiTrip', { mood: mood });
             }}
           >
             <Text style={{
-              fontFamily:'Lato-Bold',
-              fontSize: 18,
+              fontFamily: 'Lato-Bold',
+              fontSize: height * 0.025,
               alignSelf: 'center',
-              color: '#FFFFFF'
+              color: '#FFFFFF',
             }}> Action Items </Text>
           </TouchableOpacity>
-      <TouchableOpacity
+          <TouchableOpacity
             style={{
               borderColor: accentColor(mood),
               backgroundColor: '#FFFFFF',
-              paddingTop: 18,
+              paddingTop: height * 0.025,
               opacity: 0.7,
               borderRadius: 100,
-              width: 159.52,
-              height: 63,
               borderWidth: 1,
               marginLeft:'auto',
-              marginRight:20
+              marginRight: 20/375 * width,
+              width: width * 0.4,
+              height: height * 0.08,
+              marginLeft: height * 0.01,
             }}
-            //onPress={() => this.setMoodsOverlayVisible(true)}
+            onPress={this.joinTheEvent.bind(this)}
           >
             <Text style={{
-              fontSize: 18,
+              fontSize: height * 0.025,
               textAlign: 'center',
               fontFamily: 'Lato-Bold',
-              color:accentColor(mood)
-            }}> Unjoin </Text>
+              color: accentColor(mood)
+            }}> {this.state.joinedText} </Text>
           </TouchableOpacity>
 
 
         </View>
 
-        <View style={{ marginLeft: 20, paddingTop: 50, marginTop:50}}>
-          <Text style={TaskMiamiStyle.collab}>COLLABORATORS</Text>
+        <View style={{ marginLeft: 20/375 * width, marginTop: 50/ 817 * height }}>
+          <Text style={TaskStyle.collab}>COLLABORATORS</Text>
         </View>
-        <ScrollView>
-        <View style={{flex:1, alignItems:"center", justifyContent:"space-evenly"}}>
-          <Image
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "space-evenly" }}>
+            <Image
               source={require("../Images/collabButton.png")}
               resizeMode='contain'
-              style={{height: height * 0.3, width: height * 0.4}}
-          />
-      </View>
-      </ScrollView>
+              style={{ height: height * 0.4, width: height * 0.4 }}
+            />
+          </View>
+
+        </ScrollView>
       </View>
 
 
     );
   }
 }
-
-const TaskMiamiStyle = StyleSheet.create({
-
-
-
-
-
-
-
-  // displayText: {
-  //   flex: 1,
-  //   fontSize: 40,
-  //   fontStyle: 'italic',
-  //   fontWeight: '200',
-  //   color: 'black',
-  //   padding: '15%',
-  //   justifyContent: 'center',
-  // },
-  TaskTitle: {
-    fontFamily: 'Lato-Bold',
-    fontSize: 50,
-    paddingTop: 25,
-    paddingLeft: 20,
-  },
-  heading: {
-    fontFamily: 'Lato-Black',
-    fontSize: 22,
-    textAlign: "center"
-  },
-  expirationDate: {
-    fontSize: 20,
-    paddingTop: 10,
-    paddingLeft: 20,
-    fontFamily:'Lato-Italic'
-  },
-  taskDetails:{
-    fontSize: 20,
-    fontFamily:'Lato-Regular',
-    paddingRight: 90,
-    marginTop: 30,
-    paddingLeft: 20,
-    lineHeight: 24
-  },
-  collab:{
-    fontSize: 25,
-    fontFamily:'Lato-Regular',
-  }
-
-});

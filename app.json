@@ -25,6 +25,8 @@
     ],
     "ios": {
       "supportsTablet": true
-    }
+    },
+    "owner": "sunnyxrli",
+    "description": "By creating a continuous way for employees to gauge and adjust team culture without dependence on the manager, we're helping more people smile at work.\nFor more information, go to http://hci.stanford.edu/courses/cs147/2019/au/projects/HealthandWellness/Vibes"
   }
 }

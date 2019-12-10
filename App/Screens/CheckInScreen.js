@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, SafeAreaView, Text, View, AppRegistry, Alert, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { Overlay } from "react-native-elements";
 import { LinearGradient } from 'expo-linear-gradient';
 import CircularSlider from '../Components/CircularSlider';
 
 var { height, width } = Dimensions.get('window');
 
 
-const homeScreenBackgroundColor = () => {
+const backgroundColor = () => {
   return "#95B3ED";
 }
 
@@ -16,22 +17,25 @@ const accentColor = () => {
 
 export default class CheckInScreen extends React.Component {
 
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerStyle: {
-        backgroundColor: homeScreenBackgroundColor(),
-        borderBottomWidth: 0,
-      },
-      tabBarVisible: true,
-    };
+  state = {
+    loginOverlayVisible: false,
   };
+
+  setloginOverlayVisible(visible) {
+    this.setState({ loginOverlayVisible: visible });
+  }
 
   constructor(props) {
     super(props)
     this.state = {
       slider1: 110,
-      mood: 'EXCITED'
+      mood: 'EXCITED',
+      showPassword: false
     }
+  }
+
+  setShowPassword() {
+      this.setState({ showPassword: true });
   }
 
   setMood(value) {
@@ -134,10 +138,11 @@ export default class CheckInScreen extends React.Component {
   }
 
   moveToHome() {
-    this.props.navigation.setParams({firstCheckIn: false});
+    this.props.navigation.setParams({firstCheckIn: true});
+    this.props.navigation.state = {params: {cartSum: true}};
+    this.props.navigation.state.params = {cartSum: true};
     this.props.navigation.navigate("HomeScreen", {mood: this.state.mood});
   }
-
   render() {
     return (
         <LinearGradient
@@ -145,36 +150,91 @@ export default class CheckInScreen extends React.Component {
           style={styles.root}
         >
           <SafeAreaView style={styles.container}>
+            <Overlay
+              isVisible={this.state.loginOverlayVisible}
+              fullScreen={true}
+              overlayStyle={[styles.loginOverlay, {justifyContent: 'center'}]}
+              animationType="slide"
+              windowBackgroundColor="rgba(0, 0, 0, 0)"
+            >
+            <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center' }}>
+                <Image
+                    source={require('../Images/vibesLogo.png')}
+                    style={{ height: height * 0.073, width: width * 0.22, alignContent: 'center', marginTop: height * 0.1 }}
+                    resizeMode='contain'
+                />
+                <Image
+                    source={require('../Images/ProfileImages/charlie.png')}
+                    style={{ height: width * 0.285, width: width * 0.285, alignContent: 'center', marginTop: height * 0.13 }}
+                    resizeMode='contain'
+                />
+                <Image
+                    source={require('../Images/loginUsername.png')}
+                    style={{ height: height * 0.064, width: width * 0.776, alignContent: 'center', marginTop: height * 0.03 }}
+                    resizeMode='contain'
+                />
+                <TouchableOpacity
+                    activeOpacity={1.0}
+                    onPress={() => this.setShowPassword()}
+                >
+                    <Image
+                        source={this.state.showPassword ? require('../Images/filledPassword.png') : require('../Images/password.png')}
+                        style={{ height: height * 0.064, width: width * 0.776, alignContent: 'center', margin: height * 0.011 }}
+                        resizeMode='contain'
+                    />
+                </TouchableOpacity>
+
+
+                <TouchableOpacity
+                    style={{
+                        backgroundColor: '#828282',
+                        borderRadius: 7,
+                        width: width * 0.52,
+                        height: height * 0.064,
+                        justifyContent: 'center',
+                        marginTop: height * 0.069,
+                    }}
+                    onPress={() => { if (this.state.showPassword) { this.setloginOverlayVisible(false)                    } } }
+                >
+                    <Text style={{
+                        fontFamily: 'Lato-Bold',
+                        fontSize: height * 0.03,
+                        textAlign: 'center',
+                        color: 'white'
+                    }}>LOGIN</Text>
+                </TouchableOpacity>
+            </View>
+            </Overlay>
             <Text style={{ width: height * 0.4, fontFamily: 'Lato-Regular', fontSize: height * 0.04, textAlign: "center"}}>
               How have you been feeling this morning?
             </Text>
-              <CircularSlider
-                width={380}
-                height={380}
-                meterColor={this.getMoodColor()}
-                textColor='black'
-                value={this.state.slider1}
-                moodFace={this.getMoodImage()}
-                holeColors={this.getHoleColors()}
-                mouthW={this.getMouthW()}
-                mouthHOffset={this.getMouthHOffset()}
-                onValueChange={(value) => this.setMood(value)}>
-              </CircularSlider>
-              <Text style={{ fontFamily: 'Lato-Black', fontSize: 45, textAlign: 'center', top: -20}}>
-                {this.state.mood}
-              </Text>
+          <CircularSlider
+            width={380}
+            height={380}
+            meterColor={this.getMoodColor()}
+            textColor='black'
+            value={this.state.slider1}
+            moodFace={this.getMoodImage()}
+            holeColors={this.getHoleColors()}
+            mouthW={this.getMouthW()}
+            mouthHOffset={this.getMouthHOffset()}
+            onValueChange={(value) => this.setMood(value)}>
+          </CircularSlider>
+          <Text style={{ fontFamily: 'Lato-Black', fontSize: height * 0.06, textAlign: 'center', top: -height * 0.024 }}>
+            {this.state.mood}
+          </Text>
 
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => {
-                  this.moveToHome()
-                }}
-                >
-                <Text style={styles.buttonText}> Check In </Text>
-              </TouchableOpacity>
-          </SafeAreaView>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              this.moveToHome()
+            }}
+          >
+            <Text style={styles.buttonText}> Check In </Text>
+          </TouchableOpacity>
+        </SafeAreaView>
 
-        </LinearGradient>
+      </LinearGradient>
     )
   };
 }
@@ -184,7 +244,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: homeScreenBackgroundColor(),
+    backgroundColor: backgroundColor(),
   },
   container: {
     flex: 1,

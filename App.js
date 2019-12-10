@@ -6,11 +6,13 @@ import AppNavigation from './App/Navigation/AppNavigation';
 
 const STORAGE_KEY = 'MOOD'
 
+console.disableYellowBox = true;
 
 export default class App extends React.Component {
     state = {
         fontLoaded: false,
     };
+
 
     async componentDidMount() {
         await Font.loadAsync({

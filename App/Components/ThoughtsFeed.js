@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { StyleSheet, Text, View, FlatList, ActivityIndicator, SafeAreaView } from 'react-native';
-import { getPopularPhotos } from '../API/Unsplash.js';
 import { material } from 'react-native-typography';
 import { Metrics } from '../Themes';
 import ThoughtsFeedItem from '../Components/ThoughtsFeedItem';

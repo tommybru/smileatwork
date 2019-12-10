@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions, ScrollView, ColorPropType } from 'react-native';
-import { material } from 'react-native-typography';
-// import Feed from '../Components/Feed';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions, ScrollView, ColorPropType, Alert } from 'react-native';
 import { AsyncStorage } from 'react-native';
 import Home from '../Screens/HomeScreen';
 import { Colors } from '../Themes';
@@ -9,7 +7,7 @@ var { height, width } = Dimensions.get('window');
 
 ;
 
-var homeScreenBackgroundColor = (mood) => {
+var backgroundColor = (mood) => {
     if (mood == 'EXCITED') {
         return '#F291C7'
     } else if (mood == 'CONTENT') {
@@ -95,20 +93,20 @@ export default class ActionItemsMisbahBday extends React.Component {
             this.setState({ completedButton2: ((await AsyncStorage.getItem('MiamicompletedButton2') || false) === "true") });
             this.setState({ completedButton3: ((await AsyncStorage.getItem('MiamicompletedButton3') || false) === "true") });
             this.setState({ completedButton4: ((await AsyncStorage.getItem('MiamicompletedButton4') || false) === "true") });
-
             this.setState({ hasHitAddButton: ((await AsyncStorage.getItem('MiamihasHitAddButton') || false) === "true") });
         } catch (error) {
             // Error retrieving data
             console.log("Async storage error in retreival");
         }
-        setInterval(() => (
-          this.props.navigation.state.params.mood != accentColor(mood) ?
-          this.updateMood() : ""
+        this.colorTimer = setInterval(() => (
+            this.props.navigation.state.params.mood != accentColor(mood) ?
+                this.updateMood() : ""
         ), 500);
     }
 
     async componentWillUnmount() {
         this._isMounted = false;
+        clearInterval(this.colorTimer);
         try {
             await AsyncStorage.setItem('Miamibutton1', this.state.button1.toString());
             await AsyncStorage.setItem('Miamibutton2', this.state.button2.toString());
@@ -130,6 +128,7 @@ export default class ActionItemsMisbahBday extends React.Component {
             await AsyncStorage.setItem('MiamicompletedButton3', this.state.completedButton3.toString());
             await AsyncStorage.setItem('MiamicompletedButton4', this.state.completedButton4.toString());
             await AsyncStorage.setItem('MiamihasHitAddButton', this.state.hasHitAddButton.toString());
+            clearInterval(this.colorTimer);
         } catch (error) {
             // Error saving data
             console.warn("async storage had a problem storying the data on unmount");
@@ -148,7 +147,6 @@ export default class ActionItemsMisbahBday extends React.Component {
         this.setState({ hasHitAddButton: true });
     }
     updateChoice(type) {
-        console.log(type);
         switch (type) {
             case "button1":
                 this.setState({ button1: !this.state.button1 }, function () {
@@ -183,36 +181,51 @@ export default class ActionItemsMisbahBday extends React.Component {
         }
     }
 
+    checkForTaskCompletion() {
+        if (this.state.completedButton1 && this.state.completedButton2 && this.state.completedButton3 && (!this.state.hasHitAddButton || this.state.completedButton4)) {
+            Alert.alert(
+                'Completed Task',
+                "Congratulations you've completed Miami Trip!",
+                [
+                    { text: "Okay", onPress: () => this.props.navigation.navigate('TasksScreen', { mood: mood }) },
+                    { text: "Cancel", onPress: () => this.props.navigation.navigate('ActionItemsMiamiTrip', { mood: mood }) },
+                ],
+                { cancelable: false },
+            );
+        }
+    }
+
     updateItemCompletionStatus(type) {
-        console.log("toggle3");
         switch (type) {
             case "completedButton1":
                 if (!this.state.button1) {
                     return;
                 }
-                this.setState({ completedButton1: !this.state[type] });
+                this.setState({ completedButton1: !this.state[type] }, function () { this.checkForTaskCompletion(); });
                 break;
             case "completedButton2":
                 if (!this.state.button2) {
                     return;
                 }
-                this.setState({ completedButton2: !this.state[type] });
+                this.setState({ completedButton2: !this.state[type] }, function () { this.checkForTaskCompletion(); });
                 break;
             case "completedButton3":
                 if (!this.state.button3) {
                     return;
                 }
-                this.setState({ completedButton3: !this.state[type] });
+                this.setState({ completedButton3: !this.state[type] }, function () { this.checkForTaskCompletion(); });
                 break;
             case "completedButton4":
                 if (!this.state.button4) {
                     return;
                 }
-                this.setState({ completedButton4: !this.state[type] });
+                this.setState({ completedButton4: !this.state[type] }, function () { this.checkForTaskCompletion(); });
                 break;
             default:
                 break;
         }
+
+
     }
 
 
@@ -223,9 +236,11 @@ export default class ActionItemsMisbahBday extends React.Component {
                     <Text style={TaskStyle.heading}>Action Items</Text>
                 </View>
             ),
+            headerTintColor: 'black',
             headerStyle: {
-                backgroundColor: homeScreenBackgroundColor(mood),
+                backgroundColor: backgroundColor(mood),
                 borderBottomWidth: 0,
+                height: height * 0.07,
             }
         };
     };
@@ -246,29 +261,29 @@ export default class ActionItemsMisbahBday extends React.Component {
     }
 
     updateMood = () => {
-      if(!this.props.navigation) {
-        return;
-      }
-      this.setState({mood: this.props.navigation.state.params.mood});
+        if (!this.props.navigation) {
+            return;
+        }
+        this.setState({ mood: this.props.navigation.state.params.mood });
     }
 
 
     render() {
         return (
-            <View style={{ borderColor: '#DADADA', borderWidth: 1, marginTop: 20, marginLeft: 20, marginRight: 20, flex: 1, marginBottom: 20, borderRadius: 15 }}>
+            <View style={{ borderColor: '#DADADA', borderWidth: 1, marginTop: 20 / 817 * height, marginLeft: 20 / 375 * width, marginRight: 20 / 375 * width, flex: 1, marginBottom: 20 / 817 * height, borderRadius: 15 }}>
                 <View style={{ flexDirection: 'column' }}>
 
-                    <View style={{ flexDirection: 'column', height: 97, width: 301, borderBottomWidth: 1, borderColor: 'black', alignSelf: "center" }}>
-                        <View style={{ flexDirection: 'row', paddingTop: 34.5 }}>
+                    <View style={{ flexDirection: 'column', height: "auto", width: 301 / 375 * width, borderBottomWidth: 1, borderColor: '#DADADA', alignSelf: "center" }}>
+                        <View style={{ flexDirection: 'row', paddingTop: 15 / 817 * height }}>
                             <TouchableOpacity
                                 style={{
-                                    borderColor: 'black',
+                                    borderColor: this.state.completedButton1 ? accentColor(mood) : 'black',
                                     backgroundColor: this.state.completedButton1 ? accentColor(mood) : 'white',
-                                    paddingTop: 18,
+                                    paddingTop: 18 / 817 * height,
                                     opacity: 0.7,
-                                    borderRadius: 11.5,
-                                    width: 23,
-                                    height: 23,
+                                    borderRadius: (23 / 375 * width)/2,
+                                    width: 23 / 375 * width,
+                                    height: 23 / 375 * width,
                                     borderWidth: 1,
                                 }}
                                 onPress={() => {
@@ -277,58 +292,58 @@ export default class ActionItemsMisbahBday extends React.Component {
                             >
                             </TouchableOpacity>
                             <Text style={{
-                                fontSize: 20,
+                                fontSize: 20 / 375 * width,
                                 fontFamily: 'Lato-Regular',
-                                paddingLeft: 10,
-                                lineHeight: 24,
+                                paddingLeft: 10 / 375 * width,
                                 textDecorationLine: this.state.completedButton1 ? 'line-through' : 'none'
                             }}>Look up hotels</Text>
                         </View>
 
                         <View style={{ flexDirection: 'row' }}>
-                            <View style={{ marginLeft: 33, paddingTop: 5 }}><Text style={{ color: accentColor(mood), fontSize: 15, fontFamily: "Lato-Italic" }}>{this.state.claim1}</Text></View>
-                            <TouchableOpacity
-                                style={{
-                                    borderColor: accentColor(mood),
-                                    backgroundColor: this.state.button1 ? 'white' : accentColor(mood),
-                                    opacity: 0.7,
-                                    borderRadius: 11.5,
-                                    justifyContent: "space-evenly",
-                                    width: 95,
-                                    height: 25,
-                                    borderWidth: 1,
-                                    marginLeft: 'auto',
-                                    marginRight: 20,
-                                    marginTop: 5,
-                                }}
-                                onPress={() => {
-                                    console.log("hey");
-                                    this.updateChoice('button1');
-                                    console.log("hey");
-                                    // selected={this.state.button3}
-                                }} >
-                                <Text style={{
-                                    color: this.state.button1 ? accentColor(mood) : 'white',
-                                    fontSize: 13,
-                                    textAlign: 'center',
-                                    fontFamily: 'Lato-Regular',
-                                }}>{this.state.textValue1}</Text>
-                            </TouchableOpacity>
+                            <View style={{ marginLeft: 33 / 375 * width, paddingTop: 5 / 817 * height }}><Text style={{ color: accentColor(mood), fontSize: 15 / 375 * width, fontFamily: "Lato-Italic" }}>{this.state.claim1}</Text></View>
+                            <View style={{ opacity: this.state.completedButton1 ? 0.0 : 1, marginLeft: "auto" }}>
+                                <TouchableOpacity
+                                    style={{
+                                        borderColor: accentColor(mood),
+                                        backgroundColor: this.state.button1 ? 'white' : accentColor(mood),
+                                        opacity: 0.7,
+                                        borderRadius: 11.5,
+                                        justifyContent: "space-evenly",
+                                        width: 95 / 375 * width,
+                                        height: 25 / 817 * height,
+                                        borderWidth: 1,
+                                        marginLeft: 'auto',
+                                        marginRight: 20 / 375 * width,
+                                        marginTop: 5 / 817 * height,
+                                        marginBottom: 10 / 817 * height
+                                    }}
+                                    onPress={() => {
+                                        this.updateChoice('button1');
+                                        // selected={this.state.button3}
+                                    }} >
+                                    <Text style={{
+                                        color: this.state.button1 ? accentColor(mood) : 'white',
+                                        fontSize: 13 / 375 * width,
+                                        textAlign: 'center',
+                                        fontFamily: 'Lato-Regular',
+                                    }}>{this.state.textValue1}</Text>
+                                </TouchableOpacity>
+                            </View>
 
                         </View>
                     </View>
 
-                    <View style={{ flexDirection: 'column', height: 97, width: 301, borderBottomWidth: 1, borderColor: 'black', alignSelf: "center" }}>
-                        <View style={{ flexDirection: 'row', paddingTop: 34.5 }}>
+                    <View style={{ flexDirection: 'column', height: "auto", width: 301 / 375 * width, borderBottomWidth: 1, borderColor: '#DADADA', alignSelf: "center" }}>
+                        <View style={{ flexDirection: 'row', paddingTop: 10 / 817 * height }}>
                             <TouchableOpacity
                                 style={{
-                                    borderColor: 'black',
+                                    borderColor: this.state.completedButton2 ? accentColor(mood) : 'black',
                                     backgroundColor: this.state.completedButton2 ? accentColor(mood) : 'white',
-                                    paddingTop: 18,
+                                    paddingTop: 18 / 817 * height,
                                     opacity: 0.7,
-                                    borderRadius: 11.5,
-                                    width: 23,
-                                    height: 23,
+                                    borderRadius: (23 / 375 * width)/2,
+                                    width: 23 / 375 * width,
+                                    height: 23 / 375 * width,
                                     borderWidth: 1,
                                 }}
                                 onPress={() => {
@@ -337,58 +352,60 @@ export default class ActionItemsMisbahBday extends React.Component {
                             >
                             </TouchableOpacity>
                             <Text style={{
-                                fontSize: 20,
+                                fontSize: 20 / 375 * width,
                                 fontFamily: 'Lato-Regular',
-                                paddingLeft: 10,
-                                lineHeight: 24,
+                                paddingLeft: 10 / 375 * width,
                                 textDecorationLine: this.state.completedButton2 ? 'line-through' : 'none'
                             }}>Find venue</Text>
                         </View>
 
                         <View style={{ flexDirection: 'row' }}>
-                            <View style={{ marginLeft: 33, paddingTop: 5 }}><Text style={{ color: accentColor(mood), fontSize: 15, fontFamily: "Lato-Italic" }}>{this.state.claim2}</Text></View>
-                            <TouchableOpacity
-                                style={{
-                                    borderColor: accentColor(mood),
-                                    backgroundColor: this.state.button2 ? 'white' : accentColor(mood),
-                                    opacity: 0.7,
-                                    borderRadius: 11.5,
-                                    justifyContent: "space-evenly",
-                                    width: 95,
-                                    height: 25,
-                                    borderWidth: 1,
-                                    marginLeft: 'auto',
-                                    marginRight: 20,
-                                    marginTop: 5,
-                                }}
-                                onPress={() => {
-                                    console.log("hey");
-                                    this.updateChoice('button2');
-                                    console.log("hey");
-                                    // selected={this.state.button3}
-                                }} >
-                                <Text style={{
-                                    color: this.state.button2 ? accentColor(mood) : 'white',
-                                    fontSize: 13,
-                                    textAlign: 'center',
-                                    fontFamily: 'Lato-Regular',
-                                }}>{this.state.textValue2}</Text>
-                            </TouchableOpacity>
+                            <View style={{ marginLeft: 33 / 375 * width, paddingTop: 5 / 817 * height }}>
+                                <Text style={{ color: accentColor(mood), fontSize: 15 / 375 * width, fontFamily: "Lato-Italic" }}>{this.state.claim2}</Text>
+                            </View>
+                            <View style={{ opacity: this.state.completedButton2 ? 0.0 : 1, marginLeft: "auto" }}>
+                                <TouchableOpacity
+                                    style={{
+                                        borderColor: accentColor(mood),
+                                        backgroundColor: this.state.button2 ? 'white' : accentColor(mood),
+                                        opacity: 0.7,
+                                        borderRadius: 11.5,
+                                        justifyContent: "space-evenly",
+                                        width: 95 / 375 * width,
+                                        height: 25 / 817 * height,
+                                        borderWidth: 1,
+                                        marginLeft: 'auto',
+                                        marginRight: 20 / 375 * width,
+                                        marginTop: 5 / 817 * height,
+                                        marginBottom: 10 / 817 * height
+                                    }}
+                                    onPress={() => {
+                                        this.updateChoice('button2');
+                                        // selected={this.state.button3}
+                                    }} >
+                                    <Text style={{
+                                        color: this.state.button2 ? accentColor(mood) : 'white',
+                                        fontSize: 13 / 375 * width,
+                                        textAlign: 'center',
+                                        fontFamily: 'Lato-Regular',
+                                    }}>{this.state.textValue2}</Text>
+                                </TouchableOpacity>
+                            </View>
 
                         </View>
                     </View>
-                    <View style={{ flexDirection: 'column', height: 97, width: 301, borderBottomWidth: 1, borderColor: 'black', alignSelf: "center" }}>
-                        <View style={{ flexDirection: 'row', paddingTop: 34.5 }}>
+                    <View style={{ flexDirection: 'column', height: "auto", width: 301 / 375 * width, borderBottomWidth: 1, borderColor: '#DADADA', alignSelf: "center" }}>
+                        <View style={{ flexDirection: 'row', paddingTop: 10 / 817 * height }}>
 
                             <TouchableOpacity
                                 style={{
-                                    borderColor: 'black',
+                                    borderColor: this.state.completedButton3 ? accentColor(mood) : 'black',
                                     backgroundColor: this.state.completedButton3 ? accentColor(mood) : '#FFFFFF',
-                                    paddingTop: 18,
+                                    paddingTop: 18 / 817 * height,
                                     opacity: 0.7,
-                                    borderRadius: 11.5,
-                                    width: 23,
-                                    height: 23,
+                                    borderRadius: (23 / 375 * width)/2,
+                                    width: 23 / 375 * width,
+                                    height: 23 / 375 * width,
                                     borderWidth: 1,
                                 }}
                                 onPress={() => {
@@ -397,58 +414,59 @@ export default class ActionItemsMisbahBday extends React.Component {
                             >
                             </TouchableOpacity>
                             <Text style={{
-                                fontSize: 20,
+                                fontSize: 20 / 375 * width,
                                 fontFamily: 'Lato-Regular',
-                                paddingLeft: 10,
-                                lineHeight: 24,
+                                paddingLeft: 10 / 375 * width,
                                 textDecorationLine: this.state.completedButton3 ? 'line-through' : 'none'
                             }}>Ideate fun activities to do</Text>
                         </View>
 
                         <View style={{ flexDirection: 'row' }}>
-                            <View style={{ marginLeft: 33, paddingTop: 5 }}><Text style={{ color: accentColor(mood), fontSize: 15, fontFamily: "Lato-Italic" }}>{this.state.claim3}</Text></View>
-                            <TouchableOpacity
-                                style={{
-                                    borderColor: accentColor(mood),
-                                    backgroundColor: this.state.button3 ? 'white' : accentColor(mood),
-                                    opacity: 0.7,
-                                    borderRadius: 11.5,
-                                    justifyContent: "space-evenly",
-                                    width: 95,
-                                    height: 25,
-                                    borderWidth: 1,
-                                    marginLeft: 'auto',
-                                    marginRight: 20,
-                                    marginTop: 5,
-                                }}
-                                onPress={() => {
-                                    console.log("hey");
-                                    this.updateChoice('button3');
-                                    console.log("hey");
-                                    // selected={this.state.button3}
-                                }} >
-                                <Text style={{
-                                    color: this.state.button3 ? accentColor(mood) : 'white',
-                                    fontSize: 13,
-                                    textAlign: 'center',
-                                    fontFamily: 'Lato-Regular',
-                                }}>{this.state.textValue3}</Text>
-                            </TouchableOpacity>
+                            <View style={{ marginLeft: 33 / 375 * width, paddingTop: 5 / 817 * height }}><Text style={{ color: accentColor(mood), fontSize: 15 / 375 * width, fontFamily: "Lato-Italic" }}>{this.state.claim3}</Text></View>
+
+                            <View style={{ opacity: this.state.completedButton3 ? 0.0 : 1, marginLeft: "auto" }}>
+                                <TouchableOpacity
+                                    style={{
+                                        borderColor: accentColor(mood),
+                                        backgroundColor: this.state.button3 ? 'white' : accentColor(mood),
+                                        opacity: 0.7,
+                                        borderRadius: 11.5,
+                                        justifyContent: "space-evenly",
+                                        width: 95 / 375 * width,
+                                        height: 25 / 817 * height,
+                                        borderWidth: 1,
+                                        marginLeft: 'auto',
+                                        marginRight: 20 / 375 * width,
+                                        marginTop: 5 / 817 * height,
+                                        marginBottom: 10 / 817 * height
+                                    }}
+                                    onPress={() => {
+                                        this.updateChoice('button3');
+                                        // selected={this.state.button3}
+                                    }} >
+                                    <Text style={{
+                                        color: this.state.button3 ? accentColor(mood) : 'white',
+                                        fontSize: 13 / 375 * width,
+                                        textAlign: 'center',
+                                        fontFamily: 'Lato-Regular',
+                                    }}>{this.state.textValue3}</Text>
+                                </TouchableOpacity>
+                            </View>
 
                         </View>
                     </View>
 
 
-                    <View style={{ flexDirection: 'column', height: 70, width: 301, borderBottomWidth: 1, borderColor: 'black', alignSelf: "center", justifyContent: "center" }}>
-                        <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: 'column', height: "auto", width: 301 / 375 * width, borderBottomWidth: 1, borderColor: '#DADADA', alignSelf: "center" }}>
+                        <View style={{ flexDirection: 'row', paddingTop: 10 / 817 * height }}>
                             <TouchableOpacity
                                 style={{
-                                    borderColor: 'black',
+                                    borderColor: accentColor(mood),
                                     backgroundColor: accentColor(mood),
                                     opacity: 0.7,
-                                    borderRadius: 11.5,
-                                    width: 23,
-                                    height: 23,
+                                    borderRadius: (23 / 375 * width)/2,
+                                    width: 23 / 375 * width,
+                                    height: 23 / 375 * width,
                                     borderWidth: 1,
                                 }}
                                 onPress={() => {
@@ -457,30 +475,31 @@ export default class ActionItemsMisbahBday extends React.Component {
                             >
                             </TouchableOpacity>
                             <Text style={{
-                                fontSize: 20,
+                                fontSize: 20 / 375 * width,
                                 fontFamily: 'Lato-Regular',
-                                paddingLeft: 10,
-                                lineHeight: 24,
+                                paddingLeft: 10 / 375 * width,
                                 textDecorationLine: "line-through",
                             }}>Coordinate dates</Text>
                         </View>
 
                         <View style={{ flexDirection: 'row' }}>
-                            <View style={{ marginLeft: 33 }}><Text style={{ color: accentColor(mood), fontSize: 15, fontFamily: "Lato-Italic" }}>Claimed by: Sunny</Text></View>
+                            <View style={{ marginLeft: 33 / 375 * width, marginBottom: 10 / 817 * height }}>
+                                <Text style={{ color: accentColor(mood), fontSize: 15 / 375 * width, fontFamily: "Lato-Italic" }}>Claimed by: Sunny</Text>
+                            </View>
                         </View>
                     </View>
 
 
-                    <View style={{ flexDirection: 'column', height: 70, width: 301, borderBottomWidth: 1, borderColor: 'black', alignSelf: "center", justifyContent: "center" }}>
-                        <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: 'column', height: "auto", width: 301 / 375 * width, borderBottomWidth: 1, borderColor: '#DADADA', alignSelf: "center" }}>
+                        <View style={{ flexDirection: 'row', paddingTop: 10 / 817 * height }}>
                             <TouchableOpacity
                                 style={{
-                                    borderColor: 'black',
-                                    backgroundColor: "white",
+                                    borderColor: accentColor(mood),
+                                    backgroundColor: accentColor(mood),
                                     opacity: 0.7,
-                                    borderRadius: 11.5,
-                                    width: 23,
-                                    height: 23,
+                                    borderRadius: (23 / 375 * width)/2,
+                                    width: 23 / 375 * width,
+                                    height: 23 / 375 * width,
                                     borderWidth: 1,
                                 }}
                                 onPress={() => {
@@ -489,32 +508,32 @@ export default class ActionItemsMisbahBday extends React.Component {
                             >
                             </TouchableOpacity>
                             <Text style={{
-                                fontSize: 20,
+                                fontSize: 20 / 375 * width,
                                 fontFamily: 'Lato-Regular',
-                                paddingLeft: 10,
-                                lineHeight: 24,
+                                paddingLeft: 10 / 375 * width,
+                                textDecorationLine: "line-through",
                             }}>Book plane tickets</Text>
                         </View>
 
                         <View style={{ flexDirection: 'row' }}>
-                            <View style={{ marginLeft: 33 }}><Text style={{ color: accentColor(mood), fontSize: 15, fontFamily: "Lato-Italic" }}>Claimed by: Tommy</Text></View>
+                            <View style={{ marginLeft: 33 / 375 * width, marginBottom: 10 / 817 * height }}>
+                                <Text style={{ color: accentColor(mood), fontSize: 15 / 375 * width, fontFamily: "Lato-Italic" }}>Claimed by: Tommy</Text>
+                            </View>
                         </View>
                     </View>
 
-
-
-                    <View style={{ flexDirection: 'column', height: 97, width: 301, borderBottomWidth: 1, borderColor: 'black', alignSelf: "center", opacity: this.state.hasHitAddButton ? 1 : 0 }}>
-                        <View style={{ flexDirection: 'row', paddingTop: 34.5 }}>
+                    <View style={{ flexDirection: 'column', height: "auto", width: 301 / 375 * width, borderBottomWidth: 1, borderColor: '#DADADA', alignSelf: "center", opacity: this.state.hasHitAddButton ? 1 : 0 }}>
+                        <View style={{ flexDirection: 'row', paddingTop: 10 / 817 * height }}>
 
                             <TouchableOpacity
                                 style={{
-                                    borderColor: 'black',
+                                    borderColor: this.state.completedButton4 ? accentColor(mood) : 'black',
                                     backgroundColor: this.state.completedButton4 ? accentColor(mood) : '#FFFFFF',
-                                    paddingTop: 18,
+                                    paddingTop: 18 / 817 * height,
                                     opacity: 0.7,
-                                    borderRadius: 11.5,
-                                    width: 23,
-                                    height: 23,
+                                    borderRadius: (23 / 375 * width)/2,
+                                    width: 23 / 375 * width,
+                                    height: 23 / 375 * width,
                                     borderWidth: 1,
                                 }}
                                 onPress={() => {
@@ -523,47 +542,49 @@ export default class ActionItemsMisbahBday extends React.Component {
                             >
                             </TouchableOpacity>
                             <Text style={{
-                                fontSize: 20,
+                                fontSize: 20 / 375 * width,
                                 fontFamily: 'Lato-Regular',
-                                paddingLeft: 10,
-                                lineHeight: 24,
+                                paddingLeft: 10 / 375 * width,
                                 textDecorationLine: this.state.completedButton4 ? 'line-through' : 'none'
                             }}>Run idea through manager</Text>
                         </View>
 
                         <View style={{ flexDirection: 'row' }}>
-                            <View style={{ marginLeft: 33, paddingTop: 5 }}><Text style={{ color: accentColor(mood), fontSize: 15, fontFamily: "Lato-Italic" }}>{this.state.claim4}</Text></View>
-                            <TouchableOpacity
-                                style={{
-                                    borderColor: accentColor(mood),
-                                    backgroundColor: this.state.button4 ? 'white' : accentColor(mood),
-                                    opacity: 0.7,
-                                    borderRadius: 11.5,
-                                    justifyContent: "space-evenly",
-                                    width: 95,
-                                    height: 25,
-                                    borderWidth: 1,
-                                    marginLeft: 'auto',
-                                    marginRight: 20,
-                                    marginTop: 5,
-                                }}
-                                onPress={() => {
-                                    console.log("hey");
-                                    this.updateChoice('button4');
-                                    console.log("hey");
-                                }} >
-                                <Text style={{
-                                    color: this.state.button4 ? accentColor(mood) : 'white',
-                                    fontSize: 13,
-                                    textAlign: 'center',
-                                    fontFamily: 'Lato-Regular',
-                                }}>{this.state.textValue4}</Text>
-                            </TouchableOpacity>
+                            <View style={{ marginLeft: 33 / 375 * width, paddingTop: 5 / 817 * height }}>
+                                <Text style={{ color: accentColor(mood), fontSize: 15 / 375 * width, fontFamily: "Lato-Italic" }}>{this.state.claim4}</Text>
+                            </View>
+                            <View style={{ opacity: this.state.completedButton4 ? 0.0 : 1, marginLeft: "auto" }}>
+                                <TouchableOpacity
+                                    style={{
+                                        borderColor: accentColor(mood),
+                                        backgroundColor: this.state.button4 ? 'white' : accentColor(mood),
+                                        opacity: 0.7,
+                                        borderRadius: 11.5,
+                                        justifyContent: "space-evenly",
+                                        width: 95 / 375 * width,
+                                        height: 25 / 817 * height,
+                                        borderWidth: 1,
+                                        marginLeft: 'auto',
+                                        marginRight: 20 / 375 * width,
+                                        marginTop: 5 / 817 * height,
+                                        marginBottom: 5 / 817 * height
+                                    }}
+                                    onPress={() => {
+                                        this.updateChoice('button4');
+                                    }} >
+                                    <Text style={{
+                                        color: this.state.button4 ? accentColor(mood) : 'white',
+                                        fontSize: 13 / 375 * width,
+                                        textAlign: 'center',
+                                        fontFamily: 'Lato-Regular',
+                                    }}>{this.state.textValue4}</Text>
+                                </TouchableOpacity>
+                            </View>
 
                         </View>
                     </View>
                 </View>
-                <View style={{ flexDirection: 'row', justifyContent: "flex-end", marginBottom: 10, marginTop: "auto", marginRight: 20 }}>
+                <View style={{ flexDirection: 'row', justifyContent: "flex-end", marginBottom: 10 / 817 * height, marginTop: "auto", marginRight: 20 / 375 * width }}>
                     <View style={{ justifyContent: "center" }}>
                         <TouchableOpacity
                             style={{
@@ -571,9 +592,9 @@ export default class ActionItemsMisbahBday extends React.Component {
                                 backgroundColor: '#FFFFFF',
                                 alignSelf: "center",
                                 opacity: 0.7,
-                                borderRadius: 22.5,
-                                width: 45,
-                                height: 45,
+                                borderRadius: (55 / 375 * width)/2,
+                                width: 55 / 375 * width,
+                                height: 55 / 375 * width,
                                 borderWidth: 1,
                                 justifyContent: "center",
                                 shadowColor: 'rgba(0,0,0, .4)', // IOS
@@ -587,7 +608,7 @@ export default class ActionItemsMisbahBday extends React.Component {
                                 // selected={this.state.button3}
                             }}>
                             <Text style={{
-                                fontSize: 35,
+                                fontSize: 40 / 375 * width,
                                 textAlign: 'center',
                                 fontFamily: 'Lato-Bold',
                                 color: accentColor(mood)
@@ -595,7 +616,7 @@ export default class ActionItemsMisbahBday extends React.Component {
                         </TouchableOpacity>
                     </View>
                 </View>
-            </View>
+            </View >
 
         );
     }
@@ -604,7 +625,7 @@ export default class ActionItemsMisbahBday extends React.Component {
 const TaskStyle = StyleSheet.create({
     heading: {
         fontFamily: 'Lato-Black',
-        fontSize: 22,
+        fontSize: height * 0.035,
         textAlign: "center"
     },
 });

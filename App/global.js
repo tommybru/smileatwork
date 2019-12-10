@@ -1,3 +1,0 @@
-this.state= {
-    mood: 'EXCITED',
- };
