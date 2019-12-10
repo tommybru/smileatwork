@@ -4,6 +4,6 @@ Smile at Work allows employees to pulse "check-in" their mood, voice their opini
 
 It is built using React Native and integrated with Firebase so that Team Thoughts persist between sessions. For the strength of this high-fidelity prototype, whatever "mood" is checked-in by the user becomes the overall team's mood for that day.
 
-## High-fidelity Prototype Demo Gif
+## High-Fidelity Prototype Demo
 ![Demo_gif](assets/smileatwork-finaldemo.gif)
 
